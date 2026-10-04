@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>エラボオト｜曲を集めて、ペタッと選ぼう</title>
 <meta name="theme-color" content="#0072B2">
-<meta name="description" content="曲を集めて、ペタッと選ぼう｜発表会・大会の選曲相談ノート">
+<meta name="description" content="曲を集めて、ペタッと選ぼう｜発表会・イベントの選曲相談ノート">
 <meta property="og:type" content="website">
 <meta property="og:title" content="エラボオト">
-<meta property="og:description" content="曲を集めて、ペタッと選ぼう｜発表会・大会の選曲相談ノート">
+<meta property="og:description" content="曲を集めて、ペタッと選ぼう｜発表会・イベントの選曲相談ノート">
 <meta property="og:image" content="./ogp.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="エラボオト">
-<meta name="twitter:description" content="曲を集めて、ペタッと選ぼう｜発表会・大会の選曲相談ノート">
+<meta name="twitter:description" content="曲を集めて、ペタッと選ぼう｜発表会・イベントの選曲相談ノート">
 <meta name="twitter:image" content="./ogp.png">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
@@ -29,7 +29,7 @@ header{background:var(--main);color:#fff;padding:calc(10px + env(safe-area-inset
 header .t{flex:1}
 header h1{margin:0;font-size:1.3rem}
 header p{margin:0;font-size:.8rem}
-#helpBtn{border-color:#fff;border-radius:50%;width:44px;padding:0;font-size:1.2rem}
+#helpBtn,#setBtn{border-color:#fff;border-radius:50%;width:44px;padding:0;font-size:1.2rem}
 main{max-width:640px;margin:0 auto;padding:12px}
 label.l{font-size:.85rem;font-weight:bold;display:block;margin-bottom:4px}
 textarea,input[type=text],input[type=url],select{width:100%;min-height:44px;border:2px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
@@ -89,10 +89,11 @@ details.form summary{min-height:44px;display:flex;align-items:center;font-weight
 <header>
   <div class="t"><h1>エラボオト</h1><p>曲を集めて、ペタッと選ぼう</p></div>
   <button id="helpBtn" type="button" aria-label="使い方を見る">❓</button>
+  <button id="setBtn" type="button" aria-label="設定を開く">⚙️</button>
 </header>
 <main>
-  <label class="l" for="memo">🏆 大会・規程メモ</label>
-  <textarea id="memo" placeholder="例：○○杯 / 2分40秒±10秒 / 規定要素など"></textarea>
+  <label class="l" for="memo">📝 イベント・目標メモ</label>
+  <textarea id="memo" placeholder="例：〇〇発表会 / 2分40秒以内 / 明るい曲調など"></textarea>
   <div class="tabs" id="tabs" role="tablist"></div>
   <div class="bar">
     <select id="sort" aria-label="並び替え"><option value="add">追加順</option><option value="seal">シール順</option></select>
@@ -100,17 +101,18 @@ details.form summary{min-height:44px;display:flex;align-items:center;font-weight
   </div>
   <details class="form" id="formBox">
     <summary>➕ 候補曲を追加する</summary>
-    <label class="l" for="fTitle" style="margin-top:8px">曲名</label>
+    <label class="l" for="fTitle" style="margin-top:8px">曲名（必須）</label>
     <input type="text" id="fTitle" maxlength="80" placeholder="曲名">
-    <div class="row"><div><label class="l" for="fLen">長さ</label><input type="text" id="fLen" maxlength="12" placeholder="2:40"></div></div>
-    <label class="l" for="fUrl" style="margin-top:8px">音源リンク（YouTube / Spotify など）</label>
+    <label class="l" style="margin-top:8px">曲の長さ</label>
+    <div class="row"><select id="fMin" aria-label="分"></select><select id="fSec" aria-label="秒"></select></div>
+    <label class="l" for="fUrl" style="margin-top:8px">音源リンク（必須）YouTube / Spotify など</label>
     <input type="url" id="fUrl" placeholder="https://...">
-    <label class="l" for="fNote" style="margin-top:8px">一言メモ</label>
+    <label class="l" for="fNote" style="margin-top:8px">一言メモ（任意）</label>
     <input type="text" id="fNote" maxlength="120" placeholder="例：後半の盛り上がりが良い">
     <button class="primary" id="addSong" type="button">この曲をペタッと追加</button>
   </details>
   <div id="list"></div>
-  <button class="arc" id="arcBtn" type="button">📁 過去のプログラム・図鑑を見る</button>
+  <button class="arc" id="arcBtn" type="button">📁 これまでの選曲メモを見る</button>
 </main>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="inst" role="dialog" aria-label="ホーム画面に追加"><span id="instMsg">ホーム画面に追加してアプリとして使う</span><button id="instOk" type="button">追加</button><button class="x" id="instNo" type="button" aria-label="閉じる">✕</button></div>
@@ -125,7 +127,7 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){mem=JSON.stringify(S)}}
 function load(){var raw=null;try{raw=localStorage.getItem(KEY)}catch(e){raw=mem}
  try{if(raw){var d=JSON.parse(raw);if(d&&Array.isArray(d.tabs)&&d.tabs.length){S=d;S.memo=S.memo||'';S.sort=S.sort||'add'}}}catch(e){}
- if(!S.tabs.length){S.tabs=['SP (ショート)','FS (フリー)','EX'].map(function(n){return{id:uid(),name:n,songs:[]}});}
+ if(!S.tabs.length){S.tabs=['候補グループ1','候補グループ2','その他'].map(function(n){return{id:uid(),name:n,songs:[]}});}
  if(!S.tabs.some(function(t){return t.id===S.active}))S.active=S.tabs[0].id}
 function cur(){return S.tabs.filter(function(t){return t.id===S.active})[0]||S.tabs[0]}
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
@@ -164,14 +166,41 @@ function renderList(){var box=$('list');if(!box)return;box.innerHTML='';var t=cu
   var d=el('button','del','🗑 削除');d.type='button';d.onclick=function(){if(!confirm('「'+s.title+'」を削除しますか？'))return;t.songs=t.songs.filter(function(x){return x.id!==s.id});save();renderList();toast('削除しました')};acts.appendChild(d);
   c.appendChild(acts);box.appendChild(c)})}
 function render(){try{renderTabs();renderList()}catch(e){try{console.error(e)}catch(_){}}}
-function addSong(){var ti=$('fTitle'),le=$('fLen'),ur=$('fUrl'),no=$('fNote');if(!ti||!le||!ur||!no)return;
+function addSong(){var ti=$('fTitle'),mi=$('fMin'),se=$('fSec'),ur=$('fUrl'),no=$('fNote');if(!ti||!mi||!se||!ur||!no)return;
  var title=ti.value.trim();if(!title){toast('曲名を入力してね');ti.focus();return}
- var url=ur.value.trim();if(url&&!safeUrl(url)){toast('リンクは https:// から入力してね');ur.focus();return}
- cur().songs.push({id:uid(),title:title,len:le.value.trim(),url:url,note:no.value.trim(),seal:''});
- ti.value=le.value=ur.value=no.value='';save();renderList();toast('曲を追加しました🎵')}
+ var url=ur.value.trim();if(!url){toast('音源リンクを入力してね');ur.focus();return}
+ if(!safeUrl(url)){toast('リンクは https:// から入力してね');ur.focus();return}
+ var m=+mi.value,sc=+se.value,len=(m||sc)?(m+'分'+(sc<10?'0':'')+sc+'秒'):'';
+ cur().songs.push({id:uid(),title:title,len:len,url:url,note:no.value.trim(),seal:''});
+ ti.value=ur.value=no.value='';mi.value='0';se.value='0';save();renderList();toast('曲を追加しました🎵')}
+function closeTop(){var c=document.querySelectorAll('.mask');if(c.length&&c[c.length-1].parentNode)c[c.length-1].parentNode.removeChild(c[c.length-1])}
+function norm(d){if(!d||!Array.isArray(d.tabs)||!d.tabs.length)return null;var tabs=d.tabs.slice(0,50).map(function(t){t=t||{};return{id:String(t.id||uid()),name:String(t.name||'タブ').slice(0,24),songs:(Array.isArray(t.songs)?t.songs:[]).slice(0,500).map(function(x){x=x||{};return{id:String(x.id||uid()),title:String(x.title||'(無題)').slice(0,80),len:String(x.len||'').slice(0,12),url:String(x.url||'').slice(0,500),note:String(x.note||'').slice(0,120),seal:('rybg'.indexOf(x.seal)>=0&&x.seal)?x.seal:''}})}});
+ var act=tabs.some(function(t){return t.id===d.active})?d.active:tabs[0].id;return{memo:String(d.memo||'').slice(0,2000),tabs:tabs,active:act,sort:d.sort==='seal'?'seal':'add'}}
+function applyState(n){S=n;save();var mo=$('memo'),so=$('sort');if(mo)mo.value=S.memo;if(so)so.value=S.sort;render()}
+function settings(){modal(function(m){m.appendChild(el('h2',null,'⚙️ 設定（データ管理）'));
+ m.appendChild(el('h4',null,'💾 バックアップ'));
+ var ta=el('textarea');ta.style.height='80px';ta.setAttribute('aria-label','バックアップ用テキスト');ta.placeholder='書き出したデータ／復元したいデータをここに';
+ var dl=el('button','primary','JSONファイルとして保存');dl.type='button';
+ dl.onclick=function(){try{var bl=new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='erabooto-backup.json';document.body.appendChild(a);a.click();document.body.removeChild(a);toast('保存しました')}catch(e){ta.value=JSON.stringify(S);toast('下のテキストをコピーして保存してね')}};
+ var tx=el('button','close','テキストとして書き出す');tx.type='button';
+ tx.onclick=function(){ta.value=JSON.stringify(S);try{ta.select()}catch(e){}toast('書き出しました。コピーして保存してね')};
+ m.appendChild(dl);m.appendChild(tx);m.appendChild(ta);
+ m.appendChild(el('h4',null,'📥 復元'));
+ var fi=el('input');fi.type='file';fi.accept='.json,application/json';fi.setAttribute('aria-label','バックアップファイルを選ぶ');m.appendChild(fi);
+ function restore(text){var d=null;try{d=norm(JSON.parse(text))}catch(e){}
+  if(!d){toast('読み込めないデータです');return}
+  if(!confirm('今のデータが、読み込んだ内容に置き換わります。復元しますか？'))return;
+  applyState(d);toast('復元しました');closeTop()}
+ fi.onchange=function(){var f=fi.files&&fi.files[0];if(!f)return;try{var r=new FileReader();r.onload=function(){restore(String(r.result||''))};r.onerror=function(){toast('ファイルを読めませんでした')};r.readAsText(f)}catch(e){toast('ファイルを読めませんでした')}};
+ var rs=el('button','close','上のテキストから復元する');rs.type='button';rs.onclick=function(){if(!ta.value.trim()){toast('テキスト欄にデータを貼ってね');return}restore(ta.value)};m.appendChild(rs);
+ m.appendChild(el('h4',null,'🗑 全データ初期化'));
+ var rb=el('button','close','すべて初期化する');rb.type='button';rb.style.color='#D55E00';
+ rb.onclick=function(){if(!confirm('初期化しますか？'))return;if(!confirm('本当にすべて消えます。元に戻せません。よろしいですか？'))return;
+  try{localStorage.removeItem(KEY)}catch(e){}mem=null;S={memo:'',tabs:[],active:'',sort:'add'};load();applyState(S);toast('初期化しました');closeTop()};m.appendChild(rb)})}
 function help(){modal(function(m){m.appendChild(el('h2',null,'❓ 使い方'));var ol=el('ol');
- ['【音源リンクを集める】YouTubeやSpotifyのURLを貼って候補曲を追加！','【ペタッとえらぶ】丸シール（🔴第一候補 🟡検討中 🔵保留 🟢決定！）をタップして状態を更新！','【タブを自由に編集】「SP」「ピアノ発表会」など、タブ名をダブルタップして変更OK！'].forEach(function(x){ol.appendChild(el('li',null,x))});m.appendChild(ol)})}
-function archive(){modal(function(m){m.appendChild(el('h2',null,'📁 過去のプログラム・図鑑'));var any=false;
+ ['【音源リンクを集める】YouTubeやSpotifyのURLを貼って候補曲を追加！','【ペタッとえらぶ】丸シール（🔴第一候補 🟡検討中 🔵保留 🟢決定！）をタップして状態を更新！','【タブを自由に編集】「オープニング」「ダンス前半」「ピアノソロ」など、タブ名をダブルタップして変更OK！'].forEach(function(x){ol.appendChild(el('li',null,x))});m.appendChild(ol)})}
+function archive(){modal(function(m){m.appendChild(el('h2',null,'📁 これまでの選曲メモ'));var any=false;
+ if(S.memo.trim())m.appendChild(el('div','note','📝 '+S.memo));
  S.tabs.forEach(function(t){m.appendChild(el('h4',null,t.name+'（'+t.songs.length+'曲）'));
   if(!t.songs.length){m.appendChild(el('div','note','まだ曲がありません'));return}any=true;var ul=el('ul');
   t.songs.slice().sort(function(a,b){return ORDER[a.seal||'']-ORDER[b.seal||'']}).forEach(function(s){var sl=SEALS.filter(function(x){return x.c===s.seal})[0];
@@ -181,7 +210,8 @@ function on(id,ev,fn){var e=$(id);if(e)e.addEventListener(ev,fn)}
 load();
 var memo=$('memo');if(memo){memo.value=S.memo;memo.addEventListener('input',function(){S.memo=memo.value;save()})}
 var sort=$('sort');if(sort){sort.value=S.sort;sort.addEventListener('change',function(){S.sort=sort.value;save();renderList()})}
-on('addSong','click',addSong);on('helpBtn','click',help);on('arcBtn','click',archive);
+try{var fm=$('fMin'),fs=$('fSec'),i;if(fm&&fs){for(i=0;i<=10;i++){var o=el('option',null,i+'分');o.value=i;fm.appendChild(o)}for(i=0;i<60;i+=5){var q=el('option',null,(i<10?'0':'')+i+'秒');q.value=i;fs.appendChild(q)}}}catch(e){}
+on('setBtn','click',settings);on('addSong','click',addSong);on('helpBtn','click',help);on('arcBtn','click',archive);
 render();
 /* PWA */
 var dp=null,inst=$('inst');
@@ -200,7 +230,7 @@ try{if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js')
   <p style="margin-bottom: 0.5rem;">【ご利用について】</p>
   <p style="margin-bottom: 0.5rem;">本アプリの利用に伴うトラブルやデータ損失等について、開発者は一切の責任を負いかねます。</p>
   <p style="margin-bottom: 0.5rem;">ご意見・不具合のご報告は X（<a href="https://x.com/lblt_labo" target="_blank" rel="noopener" style="color: #666; text-decoration: underline;">@lblt_labo</a>）までお願いいたします。</p>
-  <p style="margin-top: 0.5rem;"><a href="https://ofuse.me/lbltlabo/letter" target="_blank" rel="noopener noreferrer" style="color: #666; text-decoration: underline;">☕️ 開発者を応援する / メッセージを送る</a></p>
+  <p style="margin-top: 0.5rem;"><a href="https://ofuse.me/lbltlabo/letter" target="_blank" rel="noopener noreferrer" style="color: #666; text-decoration: underline;">☕ 開発者を応援する / メッセージを送る</a></p>
 </footer>
 </body>
 </html>
