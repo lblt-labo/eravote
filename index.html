@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>エラボオト｜曲を集めて、ペタッと選ぼう</title>
+<meta name="theme-color" content="#0072B2">
+<meta name="description" content="曲を集めて、ペタッと選ぼう｜発表会・大会の選曲相談ノート">
+<meta property="og:type" content="website">
+<meta property="og:title" content="エラボオト">
+<meta property="og:description" content="曲を集めて、ペタッと選ぼう｜発表会・大会の選曲相談ノート">
+<meta property="og:image" content="./ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="エラボオト">
+<meta name="twitter:description" content="曲を集めて、ペタッと選ぼう｜発表会・大会の選曲相談ノート">
+<meta name="twitter:image" content="./ogp.png">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<style>
+:root{--bg:#FAF7F0;--ink:#222;--sub:#555;--line:#D8D2C4;--card:#fff;--main:#0072B2;--r:#D55E00;--y:#F0E442;--b:#0072B2;--g:#009E73}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif;line-height:1.5;padding-bottom:env(safe-area-inset-bottom)}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;min-height:44px;min-width:44px;border-radius:12px;border:2px solid var(--ink);background:#fff;padding:0 14px;transition:transform .12s}
+button:active{transform:scale(.94)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #000;outline-offset:2px}
+header{background:var(--main);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+header .t{flex:1}
+header h1{margin:0;font-size:1.3rem}
+header p{margin:0;font-size:.8rem}
+#helpBtn{border-color:#fff;border-radius:50%;width:44px;padding:0;font-size:1.2rem}
+main{max-width:640px;margin:0 auto;padding:12px}
+label.l{font-size:.85rem;font-weight:bold;display:block;margin-bottom:4px}
+textarea,input[type=text],input[type=url],select{width:100%;min-height:44px;border:2px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+#memo{height:70px;resize:vertical}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 0 8px;-webkit-overflow-scrolling:touch}
+.tab{white-space:nowrap;border-color:var(--line);background:#fff;flex:none}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:bold}
+.tab.add{border-style:dashed}
+.bar{display:flex;gap:8px;align-items:center;margin:4px 0 10px}
+.bar select{flex:1}
+.bar .hint{font-size:.75rem;color:var(--sub);flex:2}
+details.form{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:10px;margin-bottom:12px}
+details.form summary{min-height:44px;display:flex;align-items:center;font-weight:bold;cursor:pointer}
+.row{display:flex;gap:8px;margin-top:8px}
+.row>*{flex:1}
+.primary{background:var(--main);color:#fff;border-color:var(--main);font-weight:bold;width:100%;margin-top:10px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;animation:pop .25s}
+.card.sel-g{border-color:var(--g);border-width:3px}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.top{display:flex;gap:8px;align-items:flex-start}
+.top h3{margin:0;font-size:1.05rem;flex:1;word-break:break-all}
+.len{font-size:.85rem;color:var(--sub);white-space:nowrap}
+.note{font-size:.9rem;color:var(--sub);margin:4px 0;white-space:pre-wrap;word-break:break-all}
+.acts{display:flex;gap:8px;margin-top:8px;align-items:center}
+.link{display:inline-flex;align-items:center;text-decoration:none;color:var(--main);border:2px solid var(--main);border-radius:12px;padding:0 14px;min-height:44px;font-weight:bold}
+.del{margin-left:auto;border-color:var(--line);color:var(--sub)}
+.seals{display:flex;gap:6px;margin-top:10px;justify-content:space-between}
+.seal{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;padding:2px;min-width:60px;flex:1;font-size:.7rem}
+.dot{width:44px;height:44px;border-radius:50%;border:2px dashed #888;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1.1rem;color:transparent;transition:all .15s}
+.seal[aria-pressed=true] .dot{transform:scale(1.18);border:4px solid #000;box-shadow:0 0 0 3px #fff,0 0 0 5px #000;color:#000}
+.seal[aria-pressed=true]{font-weight:bold}
+.seal[aria-pressed=true] .st{background:#000;color:#fff;border-radius:6px;padding:0 6px}
+.seal[data-c=r] .dot{background:#fff;border-color:var(--r)}.seal[data-c=y] .dot{border-color:#b3a800}.seal[data-c=b] .dot{border-color:var(--b)}.seal[data-c=g] .dot{border-color:var(--g)}
+.seal[data-c=r][aria-pressed=true] .dot{background:var(--r)}.seal[data-c=y][aria-pressed=true] .dot{background:var(--y)}.seal[data-c=b][aria-pressed=true] .dot{background:var(--b);color:#fff}.seal[data-c=g][aria-pressed=true] .dot{background:var(--g);color:#fff}
+.empty{text-align:center;color:var(--sub);padding:24px 0}
+.tools{display:flex;gap:8px;margin-top:16px}
+.tools button{flex:1}
+.arc{width:100%;margin-top:16px;border-color:var(--main);color:var(--main);font-weight:bold}
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:18px 18px 0 0;width:100%;max-width:640px;max-height:85vh;overflow:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom));animation:up .25s}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.modal h2{margin:0 0 10px;font-size:1.15rem}
+.modal ol{padding-left:1.2rem}.modal li{margin-bottom:8px}
+.modal h4{margin:12px 0 4px;border-bottom:2px solid var(--line)}
+.modal ul{margin:0;padding-left:1.2rem}
+.close{width:100%;margin-top:12px}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000;color:#fff;padding:10px 16px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:80;font-size:.9rem}
+#toast.on{opacity:1}
+#inst{position:fixed;left:10px;right:10px;bottom:10px;background:#000;color:#fff;border-radius:16px;padding:12px;display:flex;gap:8px;align-items:center;transform:translateY(150%);transition:transform .5s;z-index:60;max-width:620px;margin:0 auto}
+#inst.on{transform:none}
+#inst span{flex:1;font-size:.85rem}
+#inst button{border-color:#fff;background:#fff;color:#000;font-size:.85rem}
+#inst .x{background:none;color:#fff}
+</style>
+</head>
+<body>
+<header>
+  <div class="t"><h1>エラボオト</h1><p>曲を集めて、ペタッと選ぼう</p></div>
+  <button id="helpBtn" type="button" aria-label="使い方を見る">❓</button>
+</header>
+<main>
+  <label class="l" for="memo">🏆 大会・規程メモ</label>
+  <textarea id="memo" placeholder="例：○○杯 / 2分40秒±10秒 / 規定要素など"></textarea>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="bar">
+    <select id="sort" aria-label="並び替え"><option value="add">追加順</option><option value="seal">シール順</option></select>
+    <div class="hint">タブはダブルタップで名前変更</div>
+  </div>
+  <details class="form" id="formBox">
+    <summary>➕ 候補曲を追加する</summary>
+    <label class="l" for="fTitle" style="margin-top:8px">曲名</label>
+    <input type="text" id="fTitle" maxlength="80" placeholder="曲名">
+    <div class="row"><div><label class="l" for="fLen">長さ</label><input type="text" id="fLen" maxlength="12" placeholder="2:40"></div></div>
+    <label class="l" for="fUrl" style="margin-top:8px">音源リンク（YouTube / Spotify など）</label>
+    <input type="url" id="fUrl" placeholder="https://...">
+    <label class="l" for="fNote" style="margin-top:8px">一言メモ</label>
+    <input type="text" id="fNote" maxlength="120" placeholder="例：後半の盛り上がりが良い">
+    <button class="primary" id="addSong" type="button">この曲をペタッと追加</button>
+  </details>
+  <div id="list"></div>
+  <button class="arc" id="arcBtn" type="button">📁 過去のプログラム・図鑑を見る</button>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="inst" role="dialog" aria-label="ホーム画面に追加"><span id="instMsg">ホーム画面に追加してアプリとして使う</span><button id="instOk" type="button">追加</button><button class="x" id="instNo" type="button" aria-label="閉じる">✕</button></div>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+var KEY='erabooto_v1',mem=null;
+var SEALS=[{c:'r',n:'第一候補',m:'1'},{c:'y',n:'検討中',m:'?'},{c:'b',n:'保留',m:'…'},{c:'g',n:'決定！',m:'✔'}];
+var ORDER={g:0,r:1,y:2,b:3,'':4};
+var S={memo:'',tabs:[],active:'',sort:'add'};
+function $(i){return document.getElementById(i)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){mem=JSON.stringify(S)}}
+function load(){var raw=null;try{raw=localStorage.getItem(KEY)}catch(e){raw=mem}
+ try{if(raw){var d=JSON.parse(raw);if(d&&Array.isArray(d.tabs)&&d.tabs.length){S=d;S.memo=S.memo||'';S.sort=S.sort||'add'}}}catch(e){}
+ if(!S.tabs.length){S.tabs=['SP (ショート)','FS (フリー)','EX'].map(function(n){return{id:uid(),name:n,songs:[]}});}
+ if(!S.tabs.some(function(t){return t.id===S.active}))S.active=S.tabs[0].id}
+function cur(){return S.tabs.filter(function(t){return t.id===S.active})[0]||S.tabs[0]}
+function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+var tt=null;function toast(m){var t=$('toast');if(!t)return;t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},1600)}
+function safeUrl(u){try{var x=new URL(u);return(x.protocol==='https:'||x.protocol==='http:')?x.href:''}catch(e){return''}}
+function modal(build){var mask=el('div','mask'),m=el('div','modal');mask.appendChild(m);build(m);
+ var c=el('button','close','閉じる');c.type='button';m.appendChild(c);
+ function close(){if(mask.parentNode)mask.parentNode.removeChild(mask)}
+ c.onclick=close;mask.onclick=function(e){if(e.target===mask)close()};document.body.appendChild(mask);return close}
+function renderTabs(){var box=$('tabs');if(!box)return;box.innerHTML='';
+ S.tabs.forEach(function(t){var b=el('button','tab'+(t.id===S.active?' on':''),t.name);b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',t.id===S.active);
+  var last=0;
+  b.onclick=function(){var n=Date.now();if(n-last<350){rename(t);last=0;return}last=n;S.active=t.id;save();render()};
+  b.ondblclick=function(){rename(t)};box.appendChild(b)});
+ var a=el('button','tab add','＋ タブ追加');a.type='button';a.onclick=function(){var t={id:uid(),name:'新しいプログラム',songs:[]};S.tabs.push(t);S.active=t.id;save();render();toast('タブを追加しました');rename(t)};box.appendChild(a)}
+function rename(t){modal(function(m){m.appendChild(el('h2',null,'タブの名前を変える'));
+ var i=el('input');i.type='text';i.value=t.name;i.maxLength=24;i.setAttribute('aria-label','タブ名');m.appendChild(i);
+ var ok=el('button','primary','この名前にする');ok.type='button';m.appendChild(ok);
+ var del=el('button','close','このタブを削除');del.type='button';del.style.color='#D55E00';m.appendChild(del);
+ ok.onclick=function(){var v=i.value.trim();if(!v){toast('名前を入力してね');return}t.name=v;save();render();toast('名前を変えました');var c=document.querySelector('.mask');if(c)c.parentNode.removeChild(c)};
+ del.onclick=function(){if(S.tabs.length<2){toast('最後のタブは消せません');return}if(!confirm('「'+t.name+'」と中の曲を削除します。よいですか？'))return;S.tabs=S.tabs.filter(function(x){return x.id!==t.id});S.active=S.tabs[0].id;save();render();toast('削除しました');var c=document.querySelector('.mask');if(c)c.parentNode.removeChild(c)};
+ setTimeout(function(){try{i.focus();i.select()}catch(e){}},50)})}
+function renderList(){var box=$('list');if(!box)return;box.innerHTML='';var t=cur();if(!t)return;
+ var songs=t.songs.slice();if(S.sort==='seal')songs.sort(function(a,b){return ORDER[a.seal||'']-ORDER[b.seal||'']});
+ if(!songs.length){box.appendChild(el('div','empty','まだ曲がありません。上の「候補曲を追加する」から入れてみよう🎵'));return}
+ songs.forEach(function(s){var c=el('div','card'+(s.seal==='g'?' sel-g':''));
+  var top=el('div','top');top.appendChild(el('h3',null,s.title));if(s.len)top.appendChild(el('span','len','⏱ '+s.len));c.appendChild(top);
+  if(s.note)c.appendChild(el('div','note',s.note));
+  var seals=el('div','seals');seals.setAttribute('role','group');seals.setAttribute('aria-label','丸シール');
+  SEALS.forEach(function(x){var b=el('button','seal');b.type='button';b.dataset.c=x.c;var on=s.seal===x.c;b.setAttribute('aria-pressed',on);b.setAttribute('aria-label',x.n+(on?'（選択中）':''));b.title=x.n;
+   b.appendChild(el('span','dot',x.m));b.appendChild(el('span','st',on?x.n+'✓':x.n));
+   b.onclick=function(){s.seal=on?'':x.c;save();renderList();toast(on?'シールをはがしました':x.n+'をペタッ！')};seals.appendChild(b)});
+  c.appendChild(seals);
+  var acts=el('div','acts');var u=safeUrl(s.url||'');
+  if(u){var a=el('a','link','▶ 音源を聴く');a.href=u;a.target='_blank';a.rel='noopener noreferrer';acts.appendChild(a)}
+  var d=el('button','del','🗑 削除');d.type='button';d.onclick=function(){if(!confirm('「'+s.title+'」を削除しますか？'))return;t.songs=t.songs.filter(function(x){return x.id!==s.id});save();renderList();toast('削除しました')};acts.appendChild(d);
+  c.appendChild(acts);box.appendChild(c)})}
+function render(){try{renderTabs();renderList()}catch(e){try{console.error(e)}catch(_){}}}
+function addSong(){var ti=$('fTitle'),le=$('fLen'),ur=$('fUrl'),no=$('fNote');if(!ti||!le||!ur||!no)return;
+ var title=ti.value.trim();if(!title){toast('曲名を入力してね');ti.focus();return}
+ var url=ur.value.trim();if(url&&!safeUrl(url)){toast('リンクは https:// から入力してね');ur.focus();return}
+ cur().songs.push({id:uid(),title:title,len:le.value.trim(),url:url,note:no.value.trim(),seal:''});
+ ti.value=le.value=ur.value=no.value='';save();renderList();toast('曲を追加しました🎵')}
+function help(){modal(function(m){m.appendChild(el('h2',null,'❓ 使い方'));var ol=el('ol');
+ ['【音源リンクを集める】YouTubeやSpotifyのURLを貼って候補曲を追加！','【ペタッとえらぶ】丸シール（🔴第一候補 🟡検討中 🔵保留 🟢決定！）をタップして状態を更新！','【タブを自由に編集】「SP」「ピアノ発表会」など、タブ名をダブルタップして変更OK！'].forEach(function(x){ol.appendChild(el('li',null,x))});m.appendChild(ol)})}
+function archive(){modal(function(m){m.appendChild(el('h2',null,'📁 過去のプログラム・図鑑'));var any=false;
+ S.tabs.forEach(function(t){m.appendChild(el('h4',null,t.name+'（'+t.songs.length+'曲）'));
+  if(!t.songs.length){m.appendChild(el('div','note','まだ曲がありません'));return}any=true;var ul=el('ul');
+  t.songs.slice().sort(function(a,b){return ORDER[a.seal||'']-ORDER[b.seal||'']}).forEach(function(s){var sl=SEALS.filter(function(x){return x.c===s.seal})[0];
+   ul.appendChild(el('li',null,(sl?'['+sl.n+'] ':'')+s.title+(s.len?'（'+s.len+'）':'')+(s.note?' — '+s.note:'')))});m.appendChild(ul)});
+ if(!any)m.appendChild(el('div','empty','曲を追加するとここに並びます'))})}
+function on(id,ev,fn){var e=$(id);if(e)e.addEventListener(ev,fn)}
+load();
+var memo=$('memo');if(memo){memo.value=S.memo;memo.addEventListener('input',function(){S.memo=memo.value;save()})}
+var sort=$('sort');if(sort){sort.value=S.sort;sort.addEventListener('change',function(){S.sort=sort.value;save();renderList()})}
+on('addSong','click',addSong);on('helpBtn','click',help);on('arcBtn','click',archive);
+render();
+/* PWA */
+var dp=null,inst=$('inst');
+function dismissed(){try{return localStorage.getItem('erabooto_inst')==='1'}catch(e){return false}}
+function hideInst(){if(inst)inst.classList.remove('on');try{localStorage.setItem('erabooto_inst','1')}catch(e){}}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;if(!dismissed()&&inst)setTimeout(function(){inst.classList.add('on')},1200)});
+window.addEventListener('appinstalled',hideInst);
+on('instNo','click',hideInst);
+on('instOk','click',function(){if(dp){try{dp.prompt()}catch(e){}}hideInst()});
+try{var ios=/iphone|ipad|ipod/i.test(navigator.userAgent),st=window.navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+ if(ios&&!st&&!dismissed()&&inst){var mm=$('instMsg'),ok=$('instOk');if(mm)mm.textContent='共有ボタン→「ホーム画面に追加」でアプリとして使えます';if(ok)ok.style.display='none';setTimeout(function(){inst.classList.add('on')},1500)}}catch(e){}
+try{if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(function(){})}}catch(e){}
+});
+</script>
+<footer style="text-align: center; font-size: 0.75rem; color: #888; margin-top: 3rem; padding: 1rem 0.5rem; line-height: 1.5;">
+  <p style="margin-bottom: 0.5rem;">【ご利用について】</p>
+  <p style="margin-bottom: 0.5rem;">本アプリの利用に伴うトラブルやデータ損失等について、開発者は一切の責任を負いかねます。</p>
+  <p style="margin-bottom: 0.5rem;">ご意見・不具合のご報告は X（<a href="https://x.com/lblt_labo" target="_blank" rel="noopener" style="color: #666; text-decoration: underline;">@lblt_labo</a>）までお願いいたします。</p>
+  <p style="margin-top: 0.5rem;"><a href="https://ofuse.me/lbltlabo/letter" target="_blank" rel="noopener noreferrer" style="color: #666; text-decoration: underline;">☕️ 開発者を応援する / メッセージを送る</a></p>
+</footer>
+</body>
+</html>
