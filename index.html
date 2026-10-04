@@ -37,6 +37,7 @@ textarea,input[type=text],input[type=url],select{width:100%;min-height:44px;bord
 .tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 0 8px;-webkit-overflow-scrolling:touch}
 .tab{white-space:nowrap;border-color:var(--line);background:#fff;flex:none}
 .tab.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:bold}
+.tab.gt{border-radius:999px}.tab.gt.on{background:var(--main);border-color:var(--main)}.tabs.gen{padding-top:4px}
 .tab.add{border-style:dashed}
 .bar{display:flex;gap:8px;align-items:center;margin:4px 0 10px}
 .bar select{flex:1}
@@ -92,8 +93,9 @@ details.form summary{min-height:44px;display:flex;align-items:center;font-weight
   <button id="setBtn" type="button" aria-label="設定を開く">⚙️</button>
 </header>
 <main>
+  <div class="tabs gen" id="genres" role="tablist" aria-label="ジャンル"></div>
   <label class="l" for="memo">📝 イベント・目標メモ</label>
-  <textarea id="memo" placeholder="例：〇〇発表会 / 2分40秒以内 / 明るい曲調など"></textarea>
+  <textarea id="memo" placeholder="例：〇〇発表会、秋の大会 / 2分40秒以内、明るい曲調など"></textarea>
   <div class="tabs" id="tabs" role="tablist"></div>
   <div class="bar">
     <select id="sort" aria-label="並び替え"><option value="add">追加順</option><option value="seal">シール順</option></select>
@@ -121,14 +123,18 @@ document.addEventListener('DOMContentLoaded',function(){
 var KEY='erabooto_v1',mem=null;
 var SEALS=[{c:'r',n:'第一候補',m:'1'},{c:'y',n:'検討中',m:'?'},{c:'b',n:'保留',m:'…'},{c:'g',n:'決定！',m:'✔'}];
 var ORDER={g:0,r:1,y:2,b:3,'':4};
-var S={memo:'',tabs:[],active:'',sort:'add'};
+var D={genres:[],gid:'',sort:'add'};
+function gc(){return D.genres.filter(function(g){return g.id===D.gid})[0]||D.genres[0]}
+var S={get tabs(){return gc().tabs},set tabs(v){gc().tabs=v},get active(){return gc().active},set active(v){gc().active=v},get memo(){return gc().memo},set memo(v){gc().memo=v},get sort(){return D.sort},set sort(v){D.sort=v}};
+var DEF=[['💃 ダンス',['オープニング','チーム曲','ソロ・ユニット','エンディング']],['⛸️ フィギュアスケート',['SP','FS','RD','FD','EX']],['🎺 楽器',['ソロ','連弾・アンサンブル','講師演奏・その他']],['🏃 運動会',['ダンス・表現','競技・リレー','入退場・BGM']],['📁 その他',['メイン','候補1','候補2']]];
+function mkG(name,tn){var tabs=tn.map(function(n){return{id:uid(),name:n,songs:[]}});return{id:uid(),name:name,memo:'',tabs:tabs,active:tabs[0].id}}
 function $(i){return document.getElementById(i)}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){mem=JSON.stringify(S)}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){mem=JSON.stringify(D)}}
 function load(){var raw=null;try{raw=localStorage.getItem(KEY)}catch(e){raw=mem}
- try{if(raw){var d=JSON.parse(raw);if(d&&Array.isArray(d.tabs)&&d.tabs.length){S=d;S.memo=S.memo||'';S.sort=S.sort||'add'}}}catch(e){}
- if(!S.tabs.length){S.tabs=['候補グループ1','候補グループ2','その他'].map(function(n){return{id:uid(),name:n,songs:[]}});}
- if(!S.tabs.some(function(t){return t.id===S.active}))S.active=S.tabs[0].id}
+ var n=null;try{if(raw)n=norm(JSON.parse(raw))}catch(e){}
+ if(!n){n={genres:DEF.map(function(x){return mkG(x[0],x[1])}),gid:'',sort:'add'};n.gid=n.genres[0].id}
+ D=n}
 function cur(){return S.tabs.filter(function(t){return t.id===S.active})[0]||S.tabs[0]}
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
 var tt=null;function toast(m){var t=$('toast');if(!t)return;t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},1600)}
@@ -141,7 +147,7 @@ function renderTabs(){var box=$('tabs');if(!box)return;box.innerHTML='';
  S.tabs.forEach(function(t){var b=el('button','tab'+(t.id===S.active?' on':''),t.name);b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',t.id===S.active);
   var last=0;
   b.onclick=function(){var n=Date.now();if(n-last<350){rename(t);last=0;return}last=n;S.active=t.id;save();render()};
-  b.ondblclick=function(){rename(t)};box.appendChild(b)});
+  box.appendChild(b)});
  var a=el('button','tab add','＋ タブ追加');a.type='button';a.onclick=function(){var t={id:uid(),name:'新しいプログラム',songs:[]};S.tabs.push(t);S.active=t.id;save();render();toast('タブを追加しました');rename(t)};box.appendChild(a)}
 function rename(t){modal(function(m){m.appendChild(el('h2',null,'タブの名前を変える'));
  var i=el('input');i.type='text';i.value=t.name;i.maxLength=24;i.setAttribute('aria-label','タブ名');m.appendChild(i);
@@ -165,7 +171,7 @@ function renderList(){var box=$('list');if(!box)return;box.innerHTML='';var t=cu
   if(u){var a=el('a','link','▶ 音源を聴く');a.href=u;a.target='_blank';a.rel='noopener noreferrer';acts.appendChild(a)}
   var d=el('button','del','🗑 削除');d.type='button';d.onclick=function(){if(!confirm('「'+s.title+'」を削除しますか？'))return;t.songs=t.songs.filter(function(x){return x.id!==s.id});save();renderList();toast('削除しました')};acts.appendChild(d);
   c.appendChild(acts);box.appendChild(c)})}
-function render(){try{renderTabs();renderList()}catch(e){try{console.error(e)}catch(_){}}}
+function render(){try{renderGenres();renderTabs();renderList()}catch(e){try{console.error(e)}catch(_){}}}
 function addSong(){var ti=$('fTitle'),mi=$('fMin'),se=$('fSec'),ur=$('fUrl'),no=$('fNote');if(!ti||!mi||!se||!ur||!no)return;
  var title=ti.value.trim();if(!title){toast('曲名を入力してね');ti.focus();return}
  var url=ur.value.trim();if(!url){toast('音源リンクを入力してね');ur.focus();return}
@@ -174,16 +180,32 @@ function addSong(){var ti=$('fTitle'),mi=$('fMin'),se=$('fSec'),ur=$('fUrl'),no=
  cur().songs.push({id:uid(),title:title,len:len,url:url,note:no.value.trim(),seal:''});
  ti.value=ur.value=no.value='';mi.value='0';se.value='0';save();renderList();toast('曲を追加しました🎵')}
 function closeTop(){var c=document.querySelectorAll('.mask');if(c.length&&c[c.length-1].parentNode)c[c.length-1].parentNode.removeChild(c[c.length-1])}
-function norm(d){if(!d||!Array.isArray(d.tabs)||!d.tabs.length)return null;var tabs=d.tabs.slice(0,50).map(function(t){t=t||{};return{id:String(t.id||uid()),name:String(t.name||'タブ').slice(0,24),songs:(Array.isArray(t.songs)?t.songs:[]).slice(0,500).map(function(x){x=x||{};return{id:String(x.id||uid()),title:String(x.title||'(無題)').slice(0,80),len:String(x.len||'').slice(0,12),url:String(x.url||'').slice(0,500),note:String(x.note||'').slice(0,120),seal:('rybg'.indexOf(x.seal)>=0&&x.seal)?x.seal:''}})}});
- var act=tabs.some(function(t){return t.id===d.active})?d.active:tabs[0].id;return{memo:String(d.memo||'').slice(0,2000),tabs:tabs,active:act,sort:d.sort==='seal'?'seal':'add'}}
-function applyState(n){S=n;save();var mo=$('memo'),so=$('sort');if(mo)mo.value=S.memo;if(so)so.value=S.sort;render()}
+function normTabs(arr){return(Array.isArray(arr)?arr:[]).slice(0,50).map(function(t){t=t||{};return{id:String(t.id||uid()),name:String(t.name||'タブ').slice(0,24),songs:(Array.isArray(t.songs)?t.songs:[]).slice(0,500).map(function(x){x=x||{};return{id:String(x.id||uid()),title:String(x.title||'(無題)').slice(0,80),len:String(x.len||'').slice(0,12),url:String(x.url||'').slice(0,500),note:String(x.note||'').slice(0,120),seal:('rybg'.indexOf(x.seal)>=0&&x.seal)?x.seal:''}})}})}
+function norm(d){if(!d)return null;
+ if(!Array.isArray(d.genres)&&Array.isArray(d.tabs))d={genres:[{id:uid(),name:'📁 その他',memo:d.memo,tabs:d.tabs,active:d.active}],sort:d.sort};
+ if(!Array.isArray(d.genres)||!d.genres.length)return null;
+ var gs=d.genres.slice(0,30).map(function(g){g=g||{};var tabs=normTabs(g.tabs);if(!tabs.length)tabs=[{id:uid(),name:'メイン',songs:[]}];
+  return{id:String(g.id||uid()),name:String(g.name||'ジャンル').slice(0,24),memo:String(g.memo||'').slice(0,2000),tabs:tabs,active:tabs.some(function(t){return t.id===g.active})?g.active:tabs[0].id}});
+ return{genres:gs,gid:gs.some(function(g){return g.id===d.gid})?d.gid:gs[0].id,sort:d.sort==='seal'?'seal':'add'}}
+function applyState(n){D=n;save();var mo=$('memo'),so=$('sort');if(mo)mo.value=S.memo;if(so)so.value=D.sort;render()}
+function gedit(g){modal(function(m){m.appendChild(el('h2',null,'ジャンルの名前を変える'));
+ var i=el('input');i.type='text';i.value=g.name;i.maxLength=24;i.setAttribute('aria-label','ジャンル名');m.appendChild(i);
+ var ok=el('button','primary','この名前にする');ok.type='button';m.appendChild(ok);
+ var del=el('button','close','このジャンルを削除');del.type='button';del.style.color='#D55E00';m.appendChild(del);
+ ok.onclick=function(){var v=i.value.trim();if(!v){toast('名前を入力してね');return}g.name=v;save();render();toast('名前を変えました');closeTop()};
+ del.onclick=function(){if(D.genres.length<2){toast('最後のジャンルは消せません');return}if(!confirm('「'+g.name+'」と中の曲をすべて削除します。よいですか？'))return;D.genres=D.genres.filter(function(x){return x.id!==g.id});D.gid=D.genres[0].id;save();var mo=$('memo');if(mo)mo.value=S.memo;render();toast('削除しました');closeTop()};
+ setTimeout(function(){try{i.focus();i.select()}catch(e){}},50)})}
+function renderGenres(){var box=$('genres');if(!box)return;box.innerHTML='';
+ D.genres.forEach(function(g){var b=el('button','tab gt'+(g.id===D.gid?' on':''),g.name);b.type='button';b.setAttribute('aria-pressed',g.id===D.gid);var last=0;
+  b.onclick=function(){var n=Date.now();if(n-last<350){gedit(g);last=0;return}last=n;D.gid=g.id;save();var mo=$('memo');if(mo)mo.value=S.memo;render()};box.appendChild(b)});
+ var a=el('button','tab add','＋ ジャンル追加');a.type='button';a.onclick=function(){var g=mkG('🎵 新ジャンル',['メイン','候補1','候補2']);D.genres.push(g);D.gid=g.id;save();var mo=$('memo');if(mo)mo.value=S.memo;render();toast('ジャンルを追加しました');gedit(g)};box.appendChild(a)}
 function settings(){modal(function(m){m.appendChild(el('h2',null,'⚙️ 設定（データ管理）'));
  m.appendChild(el('h4',null,'💾 バックアップ'));
  var ta=el('textarea');ta.style.height='80px';ta.setAttribute('aria-label','バックアップ用テキスト');ta.placeholder='書き出したデータ／復元したいデータをここに';
  var dl=el('button','primary','JSONファイルとして保存');dl.type='button';
- dl.onclick=function(){try{var bl=new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='erabooto-backup.json';document.body.appendChild(a);a.click();document.body.removeChild(a);toast('保存しました')}catch(e){ta.value=JSON.stringify(S);toast('下のテキストをコピーして保存してね')}};
+ dl.onclick=function(){try{var bl=new Blob([JSON.stringify(D,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='erabooto-backup.json';document.body.appendChild(a);a.click();document.body.removeChild(a);toast('保存しました')}catch(e){ta.value=JSON.stringify(D);toast('下のテキストをコピーして保存してね')}};
  var tx=el('button','close','テキストとして書き出す');tx.type='button';
- tx.onclick=function(){ta.value=JSON.stringify(S);try{ta.select()}catch(e){}toast('書き出しました。コピーして保存してね')};
+ tx.onclick=function(){ta.value=JSON.stringify(D);try{ta.select()}catch(e){}toast('書き出しました。コピーして保存してね')};
  m.appendChild(dl);m.appendChild(tx);m.appendChild(ta);
  m.appendChild(el('h4',null,'📥 復元'));
  var fi=el('input');fi.type='file';fi.accept='.json,application/json';fi.setAttribute('aria-label','バックアップファイルを選ぶ');m.appendChild(fi);
@@ -196,15 +218,15 @@ function settings(){modal(function(m){m.appendChild(el('h2',null,'⚙️ 設定�
  m.appendChild(el('h4',null,'🗑 全データ初期化'));
  var rb=el('button','close','すべて初期化する');rb.type='button';rb.style.color='#D55E00';
  rb.onclick=function(){if(!confirm('初期化しますか？'))return;if(!confirm('本当にすべて消えます。元に戻せません。よろしいですか？'))return;
-  try{localStorage.removeItem(KEY)}catch(e){}mem=null;S={memo:'',tabs:[],active:'',sort:'add'};load();applyState(S);toast('初期化しました');closeTop()};m.appendChild(rb)})}
+  try{localStorage.removeItem(KEY)}catch(e){}mem=null;D=null;load();applyState(D);toast('初期化しました');closeTop()};m.appendChild(rb)})}
 function help(){modal(function(m){m.appendChild(el('h2',null,'❓ 使い方'));var ol=el('ol');
- ['【音源リンクを集める】YouTubeやSpotifyのURLを貼って候補曲を追加！','【ペタッとえらぶ】丸シール（🔴第一候補 🟡検討中 🔵保留 🟢決定！）をタップして状態を更新！','【タブを自由に編集】「オープニング」「ダンス前半」「ピアノソロ」など、タブ名をダブルタップして変更OK！'].forEach(function(x){ol.appendChild(el('li',null,x))});m.appendChild(ol)})}
+ ['【ジャンルとシーンを選ぶ】ダンス・スケート・楽器・運動会などのジャンルからシーンタブを切り替え！','【音源リンクを集める】YouTubeやSpotifyのURLを貼って候補曲を追加！','【ペタッとえらぶ】丸シール（🔴第一候補 🟡検討中 🔵保留 🟢決定！）をタップして状態を更新！'].forEach(function(x){ol.appendChild(el('li',null,x))});m.appendChild(ol)})}
 function archive(){modal(function(m){m.appendChild(el('h2',null,'📁 これまでの選曲メモ'));var any=false;
- if(S.memo.trim())m.appendChild(el('div','note','📝 '+S.memo));
- S.tabs.forEach(function(t){m.appendChild(el('h4',null,t.name+'（'+t.songs.length+'曲）'));
-  if(!t.songs.length){m.appendChild(el('div','note','まだ曲がありません'));return}any=true;var ul=el('ul');
-  t.songs.slice().sort(function(a,b){return ORDER[a.seal||'']-ORDER[b.seal||'']}).forEach(function(s){var sl=SEALS.filter(function(x){return x.c===s.seal})[0];
-   ul.appendChild(el('li',null,(sl?'['+sl.n+'] ':'')+s.title+(s.len?'（'+s.len+'）':'')+(s.note?' — '+s.note:'')))});m.appendChild(ul)});
+ D.genres.forEach(function(g){m.appendChild(el('h4',null,g.name));
+  if(g.memo.trim())m.appendChild(el('div','note','📝 '+g.memo));
+  g.tabs.forEach(function(t){if(!t.songs.length)return;any=true;m.appendChild(el('div','note','▼ '+t.name+'（'+t.songs.length+'曲）'));var ul=el('ul');
+   t.songs.slice().sort(function(a,b){return ORDER[a.seal||'']-ORDER[b.seal||'']}).forEach(function(x){var sl=SEALS.filter(function(y){return y.c===x.seal})[0];
+    ul.appendChild(el('li',null,(sl?'['+sl.n+'] ':'')+x.title+(x.len?'（'+x.len+'）':'')+(x.note?' — '+x.note:'')))});m.appendChild(ul)})});
  if(!any)m.appendChild(el('div','empty','曲を追加するとここに並びます'))})}
 function on(id,ev,fn){var e=$(id);if(e)e.addEventListener(ev,fn)}
 load();
